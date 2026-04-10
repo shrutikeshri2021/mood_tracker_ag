@@ -80,7 +80,7 @@ const CheckIn = ({ onComplete }) => {
   };
 
   return (
-    <div className="pb-16 space-y-8 max-w-lg mx-auto">
+    <div className="pb-32 space-y-8 max-w-lg mx-auto">
       <header className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-text-primary">Check-in</h1>
@@ -100,14 +100,14 @@ const CheckIn = ({ onComplete }) => {
               <button
                 key={m.value}
                 onClick={() => handleMoodSelect(m)}
-                className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all ${
+                className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-3 rounded-2xl transition-all ${
                   entry.mood === m.value 
                     ? "bg-white shadow-xl scale-110 border border-text-primary/5 z-10" 
                     : "opacity-40 grayscale-[0.5]"
                 }`}
               >
-                <span className="text-3xl">{m.emoji}</span>
-                <span className="text-[8px] font-black uppercase tracking-tighter text-text-primary">{m.label}</span>
+                <span className="text-2xl sm:text-3xl">{m.emoji}</span>
+                <span className="text-[7px] sm:text-[8px] font-black uppercase tracking-tighter text-text-primary w-full text-center overflow-hidden text-ellipsis whitespace-nowrap">{m.label}</span>
               </button>
             ))}
           </div>

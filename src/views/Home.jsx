@@ -28,13 +28,40 @@ const Home = ({ onTabChange }) => {
 
   const streak = () => {
     if (entries.length === 0) return 0;
-    // Simple streak calculation for demo consistency with real data
-    let count = 0;
-    const today = new Date().toDateString();
-    let current = new Date();
     
-    // This is a simplified version, real streak would check daily continuity
-    return entries.length > 5 ? 5 : entries.length;
+    // Sort entries just in case, though they should be sorted
+    const sortedEntries = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    let currentStreak = 0;
+    let checkDate = new Date();
+    checkDate.setHours(0,0,0,0);
+    
+    const firstEntryDate = new Date(sortedEntries[0].timestamp);
+    firstEntryDate.setHours(0,0,0,0);
+    
+    const diffDaysFirst = (checkDate.getTime() - firstEntryDate.getTime()) / (1000 * 3600 * 24);
+    
+    // Streak breaks if no entry today or yesterday
+    if (diffDaysFirst > 1) return 0;
+    
+    let currentDateForStreak = firstEntryDate;
+    currentStreak = 1;
+
+    for (let i = 1; i < sortedEntries.length; i++) {
+        const entryDate = new Date(sortedEntries[i].timestamp);
+        entryDate.setHours(0,0,0,0);
+        const diffDays = (currentDateForStreak.getTime() - entryDate.getTime()) / (1000 * 3600 * 24);
+
+        if (diffDays === 0) {
+            continue;
+        } else if (diffDays === 1) {
+            currentStreak++;
+            currentDateForStreak = entryDate;
+        } else {
+            break;
+        }
+    }
+    return currentStreak;
   };
 
   if (showBreathing) {
@@ -42,7 +69,7 @@ const Home = ({ onTabChange }) => {
   }
 
   return (
-    <div className="space-y-8 pb-10">
+    <div className="space-y-8 pb-32">
       <header className="flex justify-between items-start">
         <div>
           <p className="text-[10px] uppercase font-bold tracking-[0.2em] text-text-secondary/50 mb-1">
