@@ -23,37 +23,34 @@ The app features a **Pastel Wellness UI** designed to evoke calmness and reduce 
 ## 🚀 Key Features
 
 ### 1. 🛡️ Privacy First (Local-First Architecture)
-- **Zero Cloud**: No external servers, no cookies, no trackers.
-- **Device-Only Storage**: All data is encrypted and saved directly in your browser's Local Storage.
-- **Data Ownership**: Export all your data as a JSON backup or clear everything with a single click.
+- **Zero Cloud**: No external servers, no cookies, no tracking.
+- **Device-Only Storage**: All data securely rests in your browser's Local Storage.
+- **Data Ownership**: Export records to JSON, or permanently destroy all data locally with a single tap.
 
-### 2. 🔥 Intelligent Burnout Risk Engine
-A logic-based service that monitors your:
-- **Stress Persistence**: Detects if your stress levels stay high for multiple days.
-- **Energy Depletion**: Tracks recovery habits vs. workday drain.
-- **Sleep Quality**: Incorporates rest cycles into your risk score.
-  
-*Output: Gives you a clear "Low / Moderate / High" risk status with actionable recovery tips.*
+### 2. 🎛️ Premium Onboarding & Setup
+- **Personalized Setup**: Goal selection, custom avatar creation, and stress frequency profiling.
+- **Private Journey**: No real email/password login wall—just jump right into local configuration.
+- **Graceful Introduction**: Soft animated transitions establish the wellness tone immediately.
 
-### 3. 📊 Data-Driven Insights
-- **7-Day Trajectory**: Visual AreaChart showing the correlation between your Mood and Stress.
-- **System Equilibrium**: A snapshot of your overall mental stability.
-- **Metric Averages**: Breakdown of your average sleep, focus, and energy.
+### 3. 🏡 Smart Dashboard & Real Data Handling
+- **Dynamic Greetings**: Adapts to local time of day (`Good Morning`).
+- **Authentic Empty States**: Elegant fallback UI when you haven't produced enough check-ins yet.
+- **True Streak Engine**: Accurate milestone tracking, verifying consecutive daily inputs mathematically.
 
-### 4. 📝 Premium Mood Check-in
-- **Expressive Mood Selection**: Choose from high-fidelity emotional icons.
-- **Intensity Sliders**: Granular 1-10 tracking for Stress, Energy, Sleep, and Focus.
-- **Contextual Tags**: Tag your entries with triggers like "Meetings," "Deep Work," or "Overthinking."
+### 4. 📝 Premium Mood Check-in & Timeline
+- **Granular Reflection**: Log expressive emojis, plus 1-10 slider ratings for Stress, Energy, Sleep, and Focus. 
+- **Contextual Tags**: Pinpoint triggers like "Meetings", "Rest", or "Deadlines".
+- **Real-Time Journal**: Search past memories, filter by 'stressed' days, and review your reflection history interactively.
 
-### 5. 🌬️ Calm Tools
-- **Box Breathing (4-4-4-4)**: Focused rhythmic sessions for instant nervous system stabilization.
-- **4-7-8 Relaxation**: Deep breathing guides to prepare for rest and reduce anxiety.
-- **Grounding Tools**: Text-guided 5-4-3-2-1 reset.
+### 5. 📊 Data-Driven Insights & Burnout Engine
+- **Non-Medical Risk Profiling**: Evaluates consecutive days of high stress vs low sleep/energy to assess burnout risk.
+- **7-Day Trajectory**: Real-time AreaChart displaying intersections in Mood vs. Stress lines.
+- **Actionable Coping**: Intelligent output offering "Low/Moderate/High" indicators paired with realistic grounding suggestions.
 
-### 6. 📅 Timeline & Reflection
-- Searchable and filterable history.
-- Quick summary badges for every past entry.
-- Safe-delete functionality.
+### 6. 🌬️ Calm Tools & Web Reminders
+- **Box Breathing (4-4-4-4)**: Animated, session-based breathing interface for acute nervous system resets.
+- **4-7-8 Relaxation**: Deep guided breathing tools specifically timing inhales/holds/exhales for optimal recovery.
+- **Native Web Nudges**: Selectable time preferences (e.g., 08:00, 20:00) mapped to true browser Notification permissions.
 
 ---
 
