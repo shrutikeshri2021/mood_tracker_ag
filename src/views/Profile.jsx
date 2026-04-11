@@ -64,6 +64,32 @@ const Profile = ({ onTabChange }) => {
     }
   };
 
+  const testNotification = async () => {
+    if (getNotificationState() === 'granted') {
+      new Notification("ZenithMe Test", { body: "Notifications are working perfectly! 🌿", icon: "/favicon.ico" });
+    } else {
+      const state = await requestNotificationPermission();
+      if (state === 'granted') {
+        new Notification("ZenithMe Test", { body: "Notifications are working perfectly! 🌿", icon: "/favicon.ico" });
+      } else {
+        showFeedback("Permission denied.", "error");
+      }
+    }
+  };
+
+  const updateReminder = (id, time) => {
+     let updated = [...reminders];
+     const index = updated.findIndex(r => r.id === id);
+     if (index > -1) {
+        updated[index] = { ...updated[index], time };
+     } else {
+        updated.push({ id, time, enabled: true });
+     }
+     saveReminders(updated);
+     setReminders(updated);
+     showFeedback(`Reminder saved for ${time}`);
+  };
+
   return (
     <div className="space-y-8 pb-32 max-w-lg mx-auto">
       {message && (
@@ -169,27 +195,27 @@ const Profile = ({ onTabChange }) => {
                 Choose a time for your daily check-in. We'll send a gentle nudge to your browser.
               </p>
               <div className="space-y-4 pt-2">
-                 {[
-                   { time: '08:00', label: 'Morning Reflection' },
-                   { time: '14:00', label: 'Afternoon Check' },
-                   { time: '20:00', label: 'Evening Wind-down' },
-                 ].map(preset => (
-                   <button 
-                    key={preset.time}
-                    className="w-full p-5 rounded-3xl border border-text-primary/5 bg-lavender/10 flex justify-between items-center group active:scale-95 transition-all"
-                    onClick={() => {
-                        saveReminders([...reminders, { id: Date.now(), time: preset.time, enabled: true, label: preset.label }]);
-                        setReminders(getReminders());
-                        showFeedback(`Reminder set for ${preset.time}`);
-                    }}
-                   >
-                      <div className="text-left font-bold">
-                         <div className="text-text-primary">{preset.label}</div>
-                         <div className="text-[10px] uppercase text-text-secondary/50 tracking-widest">{preset.time}</div>
-                      </div>
-                      <PlusSquare size={18} className="text-accent-lilac opacity-40 group-hover:opacity-100" />
-                   </button>
-                 ))}
+                 <button onClick={testNotification} className="w-full text-xs font-bold bg-accent-lilac/10 text-accent-lilac rounded-2xl py-3 mb-2 active:scale-95 transition-all">
+                    Send Test Notification
+                 </button>
+                 <div className="flex justify-between items-center bg-white border border-text-primary/5 p-4 rounded-3xl">
+                     <span className="font-bold text-sm text-text-primary">Morning</span>
+                     <input 
+                       type="time" 
+                       className="bg-text-primary/5 rounded-lg p-2 outline-none text-xs font-bold text-text-secondary custom-time-picker" 
+                       value={reminders.find(r => r.id === 'morning')?.time || ''}
+                       onChange={(e) => updateReminder('morning', e.target.value)} 
+                     />
+                 </div>
+                 <div className="flex justify-between items-center bg-white border border-text-primary/5 p-4 rounded-3xl">
+                     <span className="font-bold text-sm text-text-primary">Evening</span>
+                     <input 
+                       type="time" 
+                       className="bg-text-primary/5 rounded-lg p-2 outline-none text-xs font-bold text-text-secondary custom-time-picker" 
+                       value={reminders.find(r => r.id === 'evening')?.time || ''}
+                       onChange={(e) => updateReminder('evening', e.target.value)} 
+                     />
+                 </div>
               </div>
            </motion.div>
         </div>

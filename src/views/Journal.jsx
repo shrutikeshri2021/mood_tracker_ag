@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { getEntries, deleteEntry } from '../services/storage';
-import { Search, Filter, Calendar, Tag, Trash2, ChevronRight, BookOpen, Sparkles, Clock, AlertCircle } from 'lucide-react';
+import { getEntries, deleteEntry, saveEntry } from '../services/storage';
+import { VoiceEmotionEngine } from '../services/voiceEmotionEngine';
+import { Search, Filter, Calendar, Tag, Trash2, ChevronRight, BookOpen, Sparkles, Clock, AlertCircle, Mic, MicOff, Send } from 'lucide-react';
 import { format } from 'date-fns';
 
 const Journal = () => {
@@ -8,9 +9,71 @@ const Journal = () => {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
 
+  const [isListening, setIsListening] = useState(false);
+  const [quickNote, setQuickNote] = useState('');
+  const [detectedTags, setDetectedTags] = useState([]);
+
   useEffect(() => {
     setEntries(getEntries());
   }, []);
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+  useEffect(() => {
+     if (recognition) {
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        
+        recognition.onresult = (event) => {
+           let transcript = Array.from(event.results)
+              .map(result => result[0].transcript)
+              .join('');
+           
+           setQuickNote(transcript);
+           const vEngine = new VoiceEmotionEngine();
+           setDetectedTags(vEngine.analyzeText(transcript));
+        };
+        
+        recognition.onend = () => {
+           setIsListening(false);
+        };
+     }
+  }, []);
+
+  const toggleListen = () => {
+     if (!recognition) {
+        alert("Speech Recognition is not supported in this browser.");
+        return;
+     }
+     if (isListening) {
+        recognition.stop();
+        setIsListening(false);
+     } else {
+        recognition.start();
+        setIsListening(true);
+     }
+  };
+
+  const saveQuickNote = () => {
+    if (!quickNote.trim()) return;
+    const finalEntry = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        mood: 'okay',
+        moodIcon: '😐',
+        stress: 5,
+        energy: 5,
+        sleep: 7,
+        focus: 6,
+        tags: detectedTags,
+        notes: quickNote
+    };
+    saveEntry(finalEntry);
+    setEntries(getEntries());
+    setQuickNote('');
+    setDetectedTags([]);
+  };
 
   const handleDelete = (id) => {
     if (window.confirm('Are you sure you want to delete this memory?')) {
@@ -36,6 +99,48 @@ const Journal = () => {
         <h1 className="text-3xl font-bold text-text-primary">Timeline</h1>
         <p className="text-text-secondary text-sm">Every entry is a window into your growth.</p>
       </header>
+
+      {/* Voice Journal Area */}
+      <div className="glass-card rounded-[2.5rem] p-6 premium-shadow relative overflow-hidden mb-8 border border-accent-iris/20 bg-gradient-to-br from-accent-iris/5 to-transparent">
+         <h2 className="text-xs font-bold uppercase tracking-widest text-text-primary mb-3">Quick Voice Dump</h2>
+         <div className="relative">
+            <textarea 
+               value={quickNote}
+               onChange={(e) => {
+                  setQuickNote(e.target.value);
+                  const vEngine = new VoiceEmotionEngine();
+                  setDetectedTags(vEngine.analyzeText(e.target.value));
+               }}
+               placeholder="Tap the mic and speak your mind..."
+               className="w-full bg-white/60 backdrop-blur-sm border border-text-primary/5 rounded-[2rem] p-5 pb-16 min-h-[140px] text-sm font-medium outline-none transition-all placeholder:text-text-secondary/40 resize-none shadow-inner"
+            ></textarea>
+            
+            <div className="absolute bottom-4 left-4 flex flex-wrap gap-1 pointer-events-none max-w-[60%]">
+               {detectedTags.map(t => (
+                  <span key={t} className="bg-text-primary/80 text-white px-3 py-1 rounded-full text-[9px] font-bold uppercase tracking-widest shadow-sm">
+                     {t}
+                  </span>
+               ))}
+            </div>
+
+            <div className="absolute right-4 bottom-4 flex gap-2">
+               {SpeechRecognition && (
+                  <button 
+                     onClick={toggleListen}
+                     className={`w-12 h-12 rounded-full flex items-center justify-center transition-all shadow-sm border border-text-primary/10 ${isListening ? 'bg-accent-coral text-white animate-pulse' : 'bg-white text-text-primary'}`}
+                  >
+                     {isListening ? <MicOff size={20}/> : <Mic size={20}/>}
+                  </button>
+               )}
+               <button 
+                  onClick={saveQuickNote}
+                  className="w-12 h-12 rounded-full bg-accent-lilac text-white flex items-center justify-center hover:scale-105 active:scale-95 shadow-md"
+               >
+                  <Send size={20} className="ml-1" />
+               </button>
+            </div>
+         </div>
+      </div>
 
       <div className="space-y-4">
         <div className="relative">

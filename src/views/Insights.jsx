@@ -2,10 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { getEntries } from '../services/storage';
 import { calculateBurnoutRisk } from '../services/BurnoutEngine';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, CartesianGrid } from 'recharts';
-import { TrendingUp, Activity, Moon, Zap, BarChart3, Info, Sparkles } from 'lucide-react';
+import { TrendingUp, Activity, Moon, Zap, BarChart3, Info, Sparkles, Star, ChevronRight, Target } from 'lucide-react';
 import { format, subDays, isSameDay } from 'date-fns';
 
-const Insights = () => {
+const Insights = ({ onTabChange }) => {
   const [entries, setEntries] = useState([]);
   const [risk, setRisk] = useState({ score: 0, level: 'Low' });
 
@@ -91,6 +91,44 @@ const Insights = () => {
         <p className="text-text-secondary text-sm">Deep dives into your wellbeing data.</p>
       </header>
 
+      {/* Weekly Report Banner */}
+      <div 
+        onClick={() => onTabChange && onTabChange('weeklyreport')}
+        className="glass-card rounded-[2rem] p-6 flex items-center justify-between cursor-pointer active:scale-95 transition-all bg-gradient-to-r from-accent-lilac/10 to-transparent border border-accent-lilac/20"
+      >
+        <div className="flex items-center gap-4">
+           <div className="w-12 h-12 bg-white/60 rounded-full flex items-center justify-center text-accent-lilac shadow-sm">
+             <Star size={20} />
+           </div>
+           <div>
+             <div className="font-bold text-text-primary text-sm tracking-wider uppercase">Weekly Report</div>
+             <div className="text-[10px] text-text-secondary mt-1 font-bold">Your wrap-up is ready 🧾</div>
+           </div>
+        </div>
+        <div className="text-accent-lilac pr-2">
+           <ChevronRight size={20} />
+        </div>
+      </div>
+
+      {/* Target Matrix Access */}
+      <div 
+        onClick={() => onTabChange && onTabChange('triggermatrix')}
+        className="glass-card rounded-[2rem] p-6 flex items-center justify-between cursor-pointer active:scale-95 transition-all outline outline-1 outline-text-primary/5"
+      >
+        <div className="flex items-center gap-4">
+           <div className="w-12 h-12 bg-white/40 rounded-full flex items-center justify-center text-accent-coral shadow-sm">
+             <Target size={20} />
+           </div>
+           <div>
+             <div className="font-bold text-text-primary text-sm tracking-wider uppercase">Trigger Matrix</div>
+             <div className="text-[10px] text-text-secondary mt-1 font-bold">Discover your hidden drains</div>
+           </div>
+        </div>
+        <div className="text-accent-coral pr-2">
+           <ChevronRight size={20} />
+        </div>
+      </div>
+
       {/* Burnout Snapshot */}
       <section className="glass-card rounded-[2.5rem] p-7 premium-shadow space-y-6">
         <div className="flex justify-between items-center">
@@ -100,24 +138,24 @@ const Insights = () => {
            </div>
            <span 
             className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full border border-white/40"
-            style={{ backgroundColor: `${risk.color}40`, color: risk.level === 'High' ? '#D65D7A' : '#261A3C' }}
+            style={{ backgroundColor: `${risk?.color}40`, color: risk?.level === 'High' ? '#D65D7A' : '#261A3C' }}
            >
-             {risk.level} Risk
+             {risk?.level || 'Low'} Risk
            </span>
         </div>
 
         <div className="space-y-2">
           <div className="flex justify-between text-xs font-bold text-text-primary">
             <span>System Equilibrium</span>
-            <span>{Math.round(risk.score)}%</span>
+            <span>{Math.round(risk?.score || 0)}%</span>
           </div>
           <div className="h-3 w-full bg-text-primary/5 rounded-full overflow-hidden">
              <motion.div 
                initial={{ width: 0 }}
-               animate={{ width: `${risk.score}%` }}
+               animate={{ width: `${risk?.score || 0}%` }}
                transition={{ duration: 1.5, ease: "easeOut" }}
                className="h-full"
-               style={{ backgroundColor: risk.color }}
+               style={{ backgroundColor: risk?.color || '#9C7CF3' }}
              />
           </div>
         </div>
@@ -125,7 +163,7 @@ const Insights = () => {
         <div className="flex gap-4 p-4 bg-white/40 rounded-2xl border border-white/40">
            <Info size={16} className="text-text-secondary shrink-0" />
            <p className="text-[11px] font-medium text-text-secondary leading-relaxed">
-             Based on your {entries.length} logs, your "{risk.level}" status is primarily driven by your {risk.factors.avgStress > 6 ? 'high stress levels' : 'fluctuating sleep patterns'}.
+             Based on your {entries.length} logs, your "{risk?.level}" status is primarily driven by your {risk?.factors?.avgStress > 6 ? 'high stress levels' : 'fluctuating sleep patterns'}.
            </p>
         </div>
       </section>

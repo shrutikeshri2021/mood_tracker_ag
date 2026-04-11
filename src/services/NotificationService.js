@@ -37,11 +37,17 @@ export const checkReminders = () => {
   const reminders = getReminders();
   const now = new Date();
   const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-  
+  const smartMessages = [
+    "Take a deep breath. How is your energy right now?",
+    "You're building a streak. Don't break it now! 🔥",
+    "Time for a quick burnout check. It takes 30 seconds."
+  ];
+
   reminders.forEach(r => {
     if (r.time === currentTime && r.enabled && getNotificationState() === 'granted') {
+      const msg = smartMessages[Math.floor(Math.random() * smartMessages.length)];
       new Notification("ZenithMe Moment", {
-        body: r.message || "Time for a quick check-in.",
+        body: msg,
         icon: "/favicon.ico",
       });
     }

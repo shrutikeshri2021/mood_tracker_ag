@@ -1,21 +1,57 @@
 import React, { useState, useEffect } from 'react';
 import { getEntries, getProfile } from '../services/storage';
 import { calculateBurnoutRisk, getRecoverySuggestions } from '../services/BurnoutEngine';
-import { Wind, Coffee, Brain, Sparkles, ChevronRight, Zap, TrendingUp, Calendar, ArrowRight } from 'lucide-react';
+import { BurnoutEngine } from '../services/advancedBurnoutEngine';
+import { PatternDetector } from '../services/patternDetector';
+import { CopingSuggestionEngine } from '../services/copingSuggestionEngine';
+import { BalanceEngine } from '../services/balanceEngine';
+import { TriggerEngine } from '../services/triggerEngine';
+import { ForecastEngine } from '../services/forecastEngine';
+import { StreakEngine } from '../services/streakEngine';
+import { Wind, Coffee, Brain, Sparkles, ChevronRight, Zap, TrendingUp, Calendar, ArrowRight, BrainCircuit, BarChart2, Feather } from 'lucide-react';
 import Breathing from './Breathing';
+import Grounding from './Grounding';
 import { format } from 'date-fns';
 
 const Home = ({ onTabChange }) => {
   const [entries, setEntries] = useState([]);
   const [profile, setProfile] = useState({});
   const [showBreathing, setShowBreathing] = useState(false);
+  const [showGrounding, setShowGrounding] = useState(false);
   const [risk, setRisk] = useState({ score: 0, level: 'Low' });
+  const [advRisk, setAdvRisk] = useState({ score: 0, level: 'low', trend: 'stable' });
+  const [patternsCount, setPatternsCount] = useState(0);
+  const [suggestions, setSuggestions] = useState([]);
+  const [balance, setBalance] = useState({ score: 50, status: "Neutral", history: [] });
+  const [forecast, setForecast] = useState(null);
+  const [streakData, setStreakData] = useState(null);
 
   useEffect(() => {
     const data = getEntries();
     setEntries(data);
     setProfile(getProfile());
     setRisk(calculateBurnoutRisk());
+    
+    const engine = new BurnoutEngine();
+    setAdvRisk(engine.calculateBurnoutRisk(data));
+
+    const pDetector = new PatternDetector();
+    setPatternsCount(pDetector.detectPatterns(data).length);
+
+    const copeEngine = new CopingSuggestionEngine();
+    setSuggestions(copeEngine.generateSuggestions(data, data[0]?.mood));
+
+    const balEngine = new BalanceEngine();
+    setBalance(balEngine.calculateScore(data));
+
+    const tEngine = new TriggerEngine();
+    const tData = tEngine.analyzeTriggers(data);
+
+    const fEngine = new ForecastEngine();
+    setForecast(fEngine.generateForecast(data, tData));
+
+    const sEngine = new StreakEngine();
+    setStreakData(sEngine.calculateGrowth(data));
   }, []);
 
   const latestEntry = entries[0] || null;
@@ -68,6 +104,10 @@ const Home = ({ onTabChange }) => {
     return <Breathing onBack={() => setShowBreathing(false)} />;
   }
 
+  if (showGrounding) {
+    return <Grounding onBack={() => setShowGrounding(false)} />;
+  }
+
   return (
     <div className="space-y-8 pb-32">
       <header className="flex justify-between items-start">
@@ -86,6 +126,42 @@ const Home = ({ onTabChange }) => {
           {profile.name ? profile.name[0] : 'Z'}
         </div>
       </header>
+
+      {/* ⚖️ Emotional Balance Score */}
+      <div className="glass-card rounded-[2.5rem] p-7 premium-shadow relative overflow-hidden border border-text-primary/5 bg-gradient-to-tr from-accent-mint/10 via-transparent to-transparent">
+         <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-text-primary">System Balance</h3>
+            <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-white/60 text-text-secondary border border-text-primary/10">
+               {balance.status}
+            </span>
+         </div>
+
+         <div className="flex items-end gap-6">
+            <div>
+               <div className="text-6xl font-black text-text-primary tracking-tighter" style={{ color: balance.score > 60 ? '#64D7BE' : balance.score < 40 ? '#FF8EA6' : '#9C7CF3' }}>
+                  {balance.score}
+               </div>
+               <div className="text-[10px] font-bold text-text-secondary mt-1 uppercase tracking-widest">Rolling 3-day score</div>
+            </div>
+
+            {/* Micro-chart showing history */}
+            {balance.history && balance.history.length > 0 && (
+               <div className="flex-1 flex items-end justify-end gap-2 h-16 pb-2 border-b-2 border-dotted border-text-primary/10 relative">
+                 {balance.history.slice(-5).map((sc, i) => (
+                    <div 
+                       key={i} 
+                       className="w-4 rounded-t-xl transition-all shadow-sm"
+                       style={{ 
+                          height: `${Math.max(10, sc)}%`, 
+                          backgroundColor: i === balance.history.slice(-5).length -1 ? (sc >= 60 ? '#64D7BE' : sc <= 40 ? '#FF8EA6' : '#9C7CF3') : '#CBD5E1',
+                          opacity: i === balance.history.slice(-5).length -1 ? 1 : 0.6
+                       }}
+                    ></div>
+                 ))}
+               </div>
+            )}
+         </div>
+      </div>
 
       {/* Burnout Risk Card */}
       <div className="glass-card rounded-[2.5rem] p-7 premium-shadow relative overflow-hidden">
@@ -139,23 +215,114 @@ const Home = ({ onTabChange }) => {
         )}
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="glass-card rounded-3xl p-5 space-y-2">
-          <div className="flex justify-between items-center">
-            <Calendar size={18} className="text-accent-sky" />
-            <span className="text-lg font-bold text-text-primary">{streak()}</span>
+      {/* 🧠 Advanced Burnout Prediction */}
+      <div 
+        onClick={() => onTabChange('burnoutprediction')}
+        className="glass-card rounded-[2rem] p-6 premium-shadow flex items-center justify-between cursor-pointer active:scale-95 transition-all outline outline-1 outline-text-primary/5"
+      >
+        <div className="flex items-center gap-4">
+          <div className="relative w-14 h-14 rounded-full flex items-center justify-center border-4 border-text-primary/5">
+             <span className="font-black text-xl text-text-primary">{Math.round(advRisk.score)}</span>
+             <svg className="absolute w-full h-full transform -rotate-90 top-0 left-0" viewBox="0 0 36 36">
+               <path
+                 d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                 fill="none"
+                 stroke="#8a6cf0"
+                 strokeWidth="3"
+                 strokeDasharray={`${advRisk.score}, 100`}
+                 className="transition-all duration-1000 ease-out"
+               />
+             </svg>
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Day Streak</p>
+          <div>
+            <div className="flex items-center gap-2">
+              <BrainCircuit size={16} className="text-accent-iris" />
+              <span className="font-bold text-text-primary text-sm uppercase tracking-wider">Prediction</span>
+            </div>
+            <div className="text-xs text-text-secondary mt-1 font-medium capitalize">
+               {advRisk.level} Risk Level {advRisk.trend === 'worsening' ? '↘️' : advRisk.trend === 'improving' ? '↗️' : '→'}
+            </div>
+          </div>
         </div>
-        <div className="glass-card rounded-3xl p-5 space-y-2">
-          <div className="flex justify-between items-center">
-            <TrendingUp size={18} className="text-accent-mint" />
-            <span className="text-lg font-bold text-text-primary">{entries.length}</span>
-          </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-text-secondary/60">Total Logs</p>
+        <div className="text-accent-iris text-xs font-bold uppercase tracking-widest flex items-center">
+           View <ChevronRight size={16} />
         </div>
       </div>
+
+      {/* 📊 Patterns Detected Card */}
+      <div 
+        onClick={() => onTabChange('pattern')}
+        className="glass-card rounded-[2rem] p-6 premium-shadow flex items-center justify-between cursor-pointer active:scale-95 transition-all outline outline-1 outline-text-primary/5 -mt-4"
+      >
+        <div className="flex items-center gap-4">
+           <div className="w-14 h-14 bg-accent-sky/20 rounded-full flex items-center justify-center text-blue-500 shadow-inner">
+             <BarChart2 size={24} />
+           </div>
+           <div>
+             <div className="font-bold text-text-primary text-sm uppercase tracking-wider">Patterns Detected</div>
+             <div className="text-xs text-text-secondary mt-1 font-medium">
+               {patternsCount > 0 ? `${patternsCount} meaningful insights active` : 'Keep tracking to unlock'}
+             </div>
+           </div>
+        </div>
+        <div className="text-blue-500 text-xs font-bold uppercase tracking-widest flex items-center">
+           View <ChevronRight size={16} />
+        </div>
+      </div>
+
+      {/* 🧘 Smart Coping Suggestions - Top 2 */}
+      {suggestions.length > 0 && (
+         <div className="space-y-4">
+            <div className="flex justify-between items-end px-1">
+              <h3 className="text-xs uppercase font-bold text-text-primary tracking-widest">Today's Suggestions</h3>
+              <button onClick={() => onTabChange('coping')} className="text-[10px] font-bold text-accent-lilac uppercase tracking-widest">View All</button>
+            </div>
+            
+            <div className="grid grid-cols-1 gap-3">
+              {suggestions.slice(0, 2).map((s) => (
+                 <div key={s.id} onClick={() => s.actionScreen !== 'none' && onTabChange(s.actionScreen)} className="glass-card rounded-[1.5rem] p-4 flex items-center gap-4 cursor-pointer active:scale-95 transition-all outline outline-1 outline-text-primary/5">
+                    <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-2xl shadow-sm border border-text-primary/5">
+                      {s.emoji}
+                    </div>
+                    <div className="flex-1">
+                      <h4 className="font-bold text-sm text-text-primary">{s.title}</h4>
+                      <p className="text-[10px] text-text-secondary mt-0.5 font-medium line-clamp-1">{s.description}</p>
+                    </div>
+                    {s.actionScreen !== 'none' && <ChevronRight size={16} className="text-text-secondary/40 pr-1" />}
+                 </div>
+              ))}
+            </div>
+         </div>
+      )}
+
+      {/* 🔮 Tomorrow's Forecast (Shows > 4:00 PM) */}
+      {forecast && new Date().getHours() >= 16 && (
+        <div className="glass-card rounded-[2.5rem] p-7 premium-shadow border border-accent-iris/20 bg-gradient-to-br from-accent-iris/5 to-transparent relative overflow-hidden">
+           <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-text-primary">Tomorrow's Forecast</h3>
+              <span className="text-xl">🔮</span>
+           </div>
+           
+           <div className="flex items-center gap-6 mt-2">
+              <div className="text-5xl">{forecast.expectedMoodIcon}</div>
+              <div>
+                 <div className="text-sm font-bold text-text-primary capitalize mb-1">Expected: {forecast.expectedMood}</div>
+                 <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-text-secondary">Est Energy:</span>
+                    <div className="flex gap-0.5">
+                      {[1,2,3,4,5].map(v => (
+                         <div key={v} className={`w-3 h-3 rounded-[3px] ${v <= Math.ceil(forecast.expectedEnergy/2) ? 'bg-accent-iris' : 'bg-text-primary/10'}`}></div>
+                      ))}
+                    </div>
+                 </div>
+              </div>
+           </div>
+           
+           <div className="mt-5 p-3 bg-white/40 border border-white/40 rounded-xl">
+             <p className="text-[11px] font-bold text-text-secondary leading-relaxed italic">{forecast.caveat}</p>
+           </div>
+        </div>
+      )}
 
       {/* Self-Care Quick Tools */}
       <section className="space-y-4">
@@ -177,7 +344,8 @@ const Home = ({ onTabChange }) => {
             </div>
           </button>
           <button 
-            className="bg-aqua/30 border border-aqua/20 rounded-3xl p-4 text-left space-y-3 active:scale-95 transition-all"
+            onClick={() => setShowGrounding(true)}
+            className="bg-aqua/30 border border-aqua/20 rounded-3xl p-4 text-left space-y-3 active:scale-95 transition-all w-full"
           >
             <div className="w-10 h-10 rounded-2xl bg-white flex items-center justify-center text-accent-mint shadow-sm">
               <Brain size={20} />

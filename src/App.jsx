@@ -6,6 +6,11 @@ import Journal from './views/Journal';
 import Insights from './views/Insights';
 import Profile from './views/Profile';
 import Onboarding from './views/Onboarding';
+import BurnoutPredictionScreen from './views/BurnoutPredictionScreen';
+import PatternScreen from './views/PatternScreen';
+import CopingScreen from './views/CopingScreen';
+import WeeklyReportScreen from './views/WeeklyReportScreen';
+import TriggerMatrixScreen from './views/TriggerMatrixScreen';
 import { isOnboardingComplete } from './services/storage';
 import { checkReminders } from './services/NotificationService';
 
@@ -39,9 +44,19 @@ const App = () => {
       case 'checkin':
         return <CheckIn onComplete={handleCheckInComplete} />;
       case 'insights':
-        return <Insights />;
+        return <Insights onTabChange={setActiveTab} />;
       case 'profile':
         return <Profile onTabChange={setActiveTab} />;
+      case 'burnoutprediction':
+        return <BurnoutPredictionScreen onBack={() => setActiveTab('home')} />;
+      case 'pattern':
+        return <PatternScreen onBack={() => setActiveTab('home')} />;
+      case 'coping':
+        return <CopingScreen onBack={() => setActiveTab('home')} onNavigate={setActiveTab} />;
+      case 'weeklyreport':
+        return <WeeklyReportScreen onBack={() => setActiveTab('insights')} />;
+      case 'triggermatrix':
+        return <TriggerMatrixScreen onBack={() => setActiveTab('insights')} />;
       default:
         return <Home onTabChange={setActiveTab} />;
     }
