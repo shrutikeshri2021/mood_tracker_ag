@@ -78,12 +78,21 @@ const BurnoutPredictionScreen = ({ onBack }) => {
         </h1>
       </header>
 
-      {result.score === 0 && result.level === 'low' && result.signals.length === 0 ? (
+      {result.isInsufficient ? (
         <div className="glass-card rounded-[2.5rem] p-8 text-center space-y-4 shadow-lg">
-           <h2 className="text-xl font-bold text-text-primary">Data Needed</h2>
-           <p className="text-text-secondary text-sm">
+           <div className="w-16 h-16 bg-accent-lilac/10 rounded-3xl mx-auto flex items-center justify-center text-accent-lilac mb-2">
+              <BrainCircuit size={32} />
+           </div>
+           <h2 className="text-xl font-bold text-text-primary uppercase tracking-tighter">Analysis Pending</h2>
+           <p className="text-text-secondary text-sm leading-relaxed px-4">
              {result.recommendation}
            </p>
+           <button 
+             onClick={() => window.location.reload()} // Quick refresh for state sync
+             className="text-xs font-black uppercase tracking-widest text-accent-lilac bg-accent-lilac/5 px-6 py-3 rounded-full mt-4"
+           >
+             Refresh Engine
+           </button>
         </div>
       ) : (
         <>

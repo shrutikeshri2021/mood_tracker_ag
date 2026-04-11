@@ -11,7 +11,8 @@ export class BurnoutEngine {
         signals: [],
         recommendation: "Log 3 or more check-ins to activate burnout prediction 🧠",
         disclaimer: "⚕️ This is a self-awareness tool, not a medical diagnosis. If you feel overwhelmed, please reach out to a qualified professional.",
-        calculatedAt: Date.now()
+        calculatedAt: Date.now(),
+        isInsufficient: true
       };
     }
 
@@ -118,7 +119,8 @@ export class BurnoutEngine {
         signals,
         recommendation,
         disclaimer: "⚕️ This is a self-awareness tool, not a medical diagnosis. If you feel overwhelmed, please reach out to a qualified professional.",
-        calculatedAt: Date.now()
+        calculatedAt: Date.now(),
+        isInsufficient: false
     };
   }
 }

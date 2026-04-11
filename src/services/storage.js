@@ -15,9 +15,10 @@ const ENCRYPTION_KEY = 'zenithme-private-key-2026';
 const encrypt = (data) => {
   try {
     const str = JSON.stringify(data);
+    const uint8 = new TextEncoder().encode(str);
     let result = '';
-    for (let i = 0; i < str.length; i++) {
-      result += String.fromCharCode(str.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+    for (let i = 0; i < uint8.length; i++) {
+        result += String.fromCharCode(uint8[i] ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
     }
     return btoa(result);
   } catch (e) {
@@ -32,13 +33,23 @@ const decrypt = (data) => {
        return JSON.parse(data);
     }
     const decoded = atob(data);
-    let str = '';
+    const uint8s = new Uint8Array(decoded.length);
     for (let i = 0; i < decoded.length; i++) {
-       str += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+        uint8s[i] = decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length);
     }
-    return JSON.parse(str);
+    return JSON.parse(new TextDecoder().decode(uint8s));
   } catch (e) {
-    try { return JSON.parse(data); } catch (e2) { return null; }
+    try { 
+      // Legacy fallback
+      const decoded = atob(data);
+      let str = '';
+      for (let i = 0; i < decoded.length; i++) {
+         str += String.fromCharCode(decoded.charCodeAt(i) ^ ENCRYPTION_KEY.charCodeAt(i % ENCRYPTION_KEY.length));
+      }
+      return JSON.parse(str);
+    } catch (e2) {
+      try { return JSON.parse(data); } catch (e3) { return null; }
+    }
   }
 };
 

@@ -11,55 +11,54 @@ import { getEntries } from './storage';
  */
 export const calculateBurnoutRisk = () => {
   const entries = getEntries();
-  
-  if (entries.length < 3) return { score: 0, level: 'Insufficient Data', color: 'gray' };
+  if (entries.length < 3) return { score: 0, level: 'Insufficient Data', color: '#94A3B8', isInsufficient: true };
 
-  // Look at last 7 entries (or fewer if not available)
-  const windowSize = Math.min(entries.length, 7);
+  const windowSize = 10;
   const recentEntries = entries.slice(0, windowSize);
-
-  let stressSum = 0;
-  let energySum = 0;
-  let sleepSum = 0;
-  let persistentHighStress = 0;
-
-  recentEntries.forEach(entry => {
-    stressSum += entry.stress || 0;
-    energySum += entry.energy || 5; // Default middle
-    sleepSum += entry.sleep || 5;
-    if (entry.stress >= 4) persistentHighStress++;
-  });
-
-  const avgStress = stressSum / windowSize;
-  const avgEnergy = energySum / windowSize;
-  const avgSleep = sleepSum / windowSize;
-
-  // Base score 0-100
-  // Higher stress increases score
-  // Lower energy increases score
-  // Lower sleep increases score
-  let score = (avgStress * 15) + ((5 - avgEnergy) * 10) + ((5 - avgSleep) * 5);
   
-  // Multipliers for persistent issues
-  if (persistentHighStress >= 3) score += 20;
+  // Weights (0-1) - More emphasis on stress and sleep
+  const weights = {
+    stress: 0.50,
+    energy: 0.20,
+    sleep: 0.30
+  };
 
-  score = Math.min(100, Math.max(0, score));
+  const avgStress = recentEntries.reduce((acc, e) => acc + (e.stress || 0), 0) / recentEntries.length;
+  const avgEnergy = recentEntries.reduce((acc, e) => acc + (e.energy || 5), 0) / recentEntries.length;
+  const avgSleep = recentEntries.reduce((acc, e) => acc + (e.sleep || 7), 0) / recentEntries.length;
+
+  // Normalized badness scores
+  const stressNorm = (avgStress / 10) * 100;
+  const energyNorm = ((10 - avgEnergy) / 10) * 100;
+  const sleepNorm = ((10 - avgSleep) / 10) * 100;
+
+  let score = (stressNorm * weights.stress) + (energyNorm * weights.energy) + (sleepNorm * weights.sleep);
+
+  // Persistence Multipliers
+  const persistentHighStress = recentEntries.filter(e => e.stress >= 7).length >= 3;
+  const chronicLowSleep = recentEntries.filter(e => e.sleep <= 4).length >= 2;
+  
+  if (persistentHighStress) score += 15;
+  if (chronicLowSleep) score += 20;
+
+  // Cap and smooth
+  score = Math.min(score, 100);
 
   let level = 'Low';
-  let color = '#64D7BE'; // Mint
-
-  if (score > 70) {
+  let color = '#64D7BE'; // mint
+  if (score > 75) {
     level = 'High';
-    color = '#FF8EA6'; // Coral
+    color = '#FF8EA6'; // coral
   } else if (score > 40) {
     level = 'Moderate';
-    color = '#F7C8BD'; // Peach
+    color = '#F7C8BD'; // peach
   }
 
   return {
     score,
     level,
     color,
+    isInsufficient: false,
     factors: {
       avgStress,
       avgEnergy,
@@ -70,21 +69,26 @@ export const calculateBurnoutRisk = () => {
 };
 
 export const getRecoverySuggestions = (risk) => {
-  if (risk.level === 'High') {
-    return [
-      "Consider a full mental health day if possible.",
-      "Cancel non-essential meetings today.",
-      "Reach out to a trusted mentor or peer."
-    ];
-  } else if (risk.level === 'Moderate') {
-    return [
-      "Try a 10-minute walk without your phone.",
-      "End work exactly on time today.",
-      "Focus on a single task rather than multi-tasking."
-    ];
+  if (risk.isInsufficient) return ["Keep logging check-ins to unlock recovery tips."];
+  
+  const suggestions = [];
+  if (risk.factors.avgStress > 7) {
+    suggestions.push("Prioritize a 15-minute digital detox this afternoon.");
+    suggestions.push("Try the box breathing tool to lower your cortisol.");
   }
-  return [
-    "You're in a good rhythm. Keep protecting your boundaries.",
-    "Try a quick gratitude entry to maintain momentum."
-  ];
+  if (risk.factors.avgEnergy < 4) {
+    suggestions.push("Focus only on 'must-do' tasks today. Preserve your battery.");
+    suggestions.push("Consider a 20-minute power nap or rest session.");
+  }
+  if (risk.factors.avgSleep < 5) {
+    suggestions.push("Set a strict screen-off time 1 hour before bed tonight.");
+    suggestions.push("A gentle 10-minute stretch could improve tonight's sleep quality.");
+  }
+  
+  if (suggestions.length === 0) {
+    suggestions.push("Maintain your current boundaries—your rhythm is healthy!");
+    suggestions.push("Take a moment to celebrate your steady progress today.");
+  }
+  
+  return [...new Set(suggestions)];
 };
