@@ -2,7 +2,7 @@
 
 **ZenithMe** is a premium, mobile-first, and privacy-focused mental wellbeing application designed specifically for busy professionals. It helps users track mood, stress, energy, and burnout risk while keeping all data 100% private and local to their device.
 
-![App Preview](https://mood-tracker-ag.onrender.com)
+Try here  https://mood-tracker-ag.onrender.com
 
 ---
 
